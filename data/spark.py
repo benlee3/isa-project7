@@ -6,7 +6,7 @@ sc = SparkContext("spark://spark-master:7077", "PopularItems")
 data = sc.textFile("/tmp/data/access.log", 2)     # each worker loads a piece of the data file
 
 
-pairs = data.distinct().map(lambda line: line.split("\t"))   # tell each worker to split each line of it's partition
+pairs = data.distinct().map(lambda line: line.split("\t")).sortBy(lambda x: x[1])   # tell each worker to split each line of it's partition
 print ("HERE PAIRS>>>>>>>>>>>>>>>>>>>>>>>")
 output = pairs.collect()                          # bring the data back to the master node so we can print it out
 for pair1, pair2 in output:
@@ -44,13 +44,14 @@ counted = tuples.reduceByKey(lambda x,y: x+y)
 output = counted.collect()                          # bring the data back to the master node so we can print it out
 for pair, count in output:
 	print ("tuple %s count %s" % (pair, count))
-print ("Popular items done")
+# print ("Popular items done")
 
 filtered = counted.filter(lambda line: line[1] > 2)
 output = filtered.collect()
 for pair, count in output:
-	print ("tuple %s count %s" % (pair, count))
-print ("Popular items done")
+	print ("%s users who viewed item %s also viewed item %s" % (count, pair[0], pair[1]))
+	# print ("tuple %s count %s" % (pair, count))
+# print ("Popular items done")
 
 # combs = pages.map(lambda line: (line[0],list(line[1])[0]))
 # print ("HERE COMBS>>>>>>>>>>>>>>>>>>>>>>>")
